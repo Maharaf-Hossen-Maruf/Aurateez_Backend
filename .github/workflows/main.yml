@@ -3,7 +3,7 @@ name: Deploy Django to CPanel via FTP
 on:
   push:
     branches:
-      - main  # Trigger deployment on pushes to the main branch
+      - main
 
 jobs:
   deploy:
@@ -16,7 +16,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
-          python-version: '3.11'  # Adjust to your project's Python version
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
@@ -25,6 +25,8 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Tests
+        env:
+          SECRET_KEY: ${{ secrets.SECRET_KEY }}  # Pass the SECRET_KEY to Django
         run: |
           source venv/bin/activate
           python manage.py test
@@ -32,10 +34,10 @@ jobs:
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
         with:
-          server: ${{ secrets.FTP_SERVER }}          # Add your FTP server in GitHub Secrets
-          username: ${{ secrets.FTP_USERNAME }}       # Add your FTP username in GitHub Secrets
-          password: ${{ secrets.FTP_PASSWORD }}       # Add your FTP password in GitHub Secrets
-          local-dir: ./                               # Deploy everything in the root directory
-          server-dir: /public_html/myapp              # Directory on your server, adjust if needed
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
+          server-dir: /public_html/myapp
           method: ftp
-          dry-run: false                              # Set to true if you want to test without actual deployment
+          dry-run: false
