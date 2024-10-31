@@ -39,7 +39,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./ 
           method: ftp
-          dry-run: false
+          
         
           
           
