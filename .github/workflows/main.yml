@@ -1,9 +1,9 @@
-name: Deploy Django to CPanel
+name: Deploy Django to CPanel via FTP
 
 on:
   push:
     branches:
-      - main  # Specify the branch you want to deploy from
+      - main  # Trigger deployment on pushes to the main branch
 
 jobs:
   deploy:
@@ -13,35 +13,29 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: Set up SSH
-        uses: webfactory/ssh-agent@v0.5.3
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          ssh-private-key: ${{ secrets.CPANEL_SSH_KEY }}
+          python-version: '3.11'  # Adjust to your project's Python version
 
-      - name: Deploy to CPanel
-        env:
-          CPANEL_USER: 'aurateez'          # Replace with your CPanel username
-          CPANEL_HOST: 'aurateez.com'        # Replace with your CPanel server's IP or domain
+      - name: Install dependencies
         run: |
-          ssh $CPANEL_USER@$CPANEL_HOST << 'EOF'
-            # Go to the project directory
-            cd /home/$CPANEL_USER/your_django_project_directory
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
 
-            # Pull the latest code from the repository
-            git pull origin main
+      - name: Run Tests
+        run: |
+          source venv/bin/activate
+          python manage.py test
 
-            # Activate virtual environment and install dependencies
-            source venv/bin/activate
-            pip install -r requirements.txt
-
-            # Run Django migrations
-            python manage.py migrate
-
-            # Collect static files
-            python manage.py collectstatic --noinput
-
-            # Restart server if necessary (Apache, Gunicorn, etc.)
-            # Example: Restart Gunicorn
-            pkill gunicorn
-            gunicorn --workers 3 --bind unix:/home/$CPANEL_USER/your_project.sock your_project.wsgi:application &
-          EOF
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ${{ secrets.FTP_SERVER }}          # Add your FTP server in GitHub Secrets
+          username: ${{ secrets.FTP_USERNAME }}       # Add your FTP username in GitHub Secrets
+          password: ${{ secrets.FTP_PASSWORD }}       # Add your FTP password in GitHub Secrets
+          local-dir: ./                               # Deploy everything in the root directory
+          server-dir: /public_html/myapp              # Directory on your server, adjust if needed
+          method: ftp
+          dry-run: false                              # Set to true if you want to test without actual deployment
