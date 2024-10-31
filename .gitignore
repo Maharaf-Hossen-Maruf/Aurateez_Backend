@@ -3,9 +3,9 @@ venv/
 env/
 
 # Django files
-*.pyc
-*.pyo
-__pycache__/
+# *.pyc
+# *.pyo
+# __pycache__/
 
 
 
