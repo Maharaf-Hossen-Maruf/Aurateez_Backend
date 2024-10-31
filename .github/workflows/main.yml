@@ -29,6 +29,7 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}  # Pass the SECRET_KEY to Django
         run: |
           source venv/bin/activate
+          cd aurateez
           python manage.py test
 
       - name: Deploy via FTP
