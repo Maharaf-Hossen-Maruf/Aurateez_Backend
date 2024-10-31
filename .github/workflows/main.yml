@@ -29,7 +29,7 @@ jobs:
           SECRET_KEY: ${{ secrets.SECRET_KEY }}  # Pass the SECRET_KEY to Django
         run: |
           source venv/bin/activate
-          python manage.py test
+          python manage.py runserver
 
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@4.3.0
@@ -37,6 +37,7 @@ jobs:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./
           server-dir: /backend.aurateez.com/
           method: ftp
           dry-run: true
