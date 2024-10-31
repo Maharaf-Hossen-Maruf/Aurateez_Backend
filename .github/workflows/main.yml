@@ -1,0 +1,47 @@
+name: Deploy Django to CPanel
+
+on:
+  push:
+    branches:
+      - main  # Specify the branch you want to deploy from
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.CPANEL_SSH_KEY }}
+
+      - name: Deploy to CPanel
+        env:
+          CPANEL_USER: 'aurateez'          # Replace with your CPanel username
+          CPANEL_HOST: 'aurateez.com'        # Replace with your CPanel server's IP or domain
+        run: |
+          ssh $CPANEL_USER@$CPANEL_HOST << 'EOF'
+            # Go to the project directory
+            cd /home/$CPANEL_USER/your_django_project_directory
+
+            # Pull the latest code from the repository
+            git pull origin main
+
+            # Activate virtual environment and install dependencies
+            source venv/bin/activate
+            pip install -r requirements.txt
+
+            # Run Django migrations
+            python manage.py migrate
+
+            # Collect static files
+            python manage.py collectstatic --noinput
+
+            # Restart server if necessary (Apache, Gunicorn, etc.)
+            # Example: Restart Gunicorn
+            pkill gunicorn
+            gunicorn --workers 3 --bind unix:/home/$CPANEL_USER/your_project.sock your_project.wsgi:application &
+          EOF
